@@ -1,0 +1,20 @@
+case code:lib_dir(fmt) of
+    {error, _} -> skip;
+    FmtPath ->
+        FmtSrc = FmtPath ++ "/src/erl_prettypr.erl",
+        case filelib:is_file(FmtSrc) of
+            true -> skip;
+            false ->
+                PrettyPath = code:lib_dir(syntax_tools) ++ "/src/erl_prettypr.erl",
+                {ok, Content} = file:read_file(PrettyPath),
+                Content1 = re:replace(Content, "sub_indent = 2", "sub_indent = 4"),
+                file:write_file(FmtSrc, Content1)
+        end,
+        OutDir = FmtPath ++ "/ebin",
+        case filelib:is_file(OutDir ++ "/erl_prettypr.beam") of
+            true -> skip;
+            false ->
+                compile:file(FmtSrc, [{outdir,OutDir}])
+        end
+end,
+CONFIG.
